@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Directory Test</title>
+</head>
+<body>
+    <h1>Employee Directory Test</h1>
+    <div id="test-results"></div>
+
+    <!-- Scripts -->
+    <script src="src/main/resources/static/js/data.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const results = document.getElementById('test-results');
+            
+            // Test 1: Check if data.js loaded
+            results.innerHTML += '<h2>Test 1: Data Loading</h2>';
+            if (typeof mockEmployees !== 'undefined') {
+                results.innerHTML += `<p>✅ Mock employees loaded: ${mockEmployees.length} employees</p>`;
+            } else {
+                results.innerHTML += '<p>❌ Mock employees not loaded</p>';
+            }
+            
+            // Test 2: Check if EmployeeDataManager loaded
+            results.innerHTML += '<h2>Test 2: EmployeeDataManager</h2>';
+            if (typeof employeeDataManager !== 'undefined') {
+                results.innerHTML += `<p>✅ EmployeeDataManager loaded</p>`;
+                const employees = employeeDataManager.getAllEmployees();
+                results.innerHTML += `<p>✅ Employees from manager: ${employees.length} employees</p>`;
+                
+                // Show first few employees
+                results.innerHTML += '<h3>First 3 employees:</h3>';
+                employees.slice(0, 3).forEach(emp => {
+                    results.innerHTML += `<p>${emp.firstName} ${emp.lastName} - ${emp.department}</p>`;
+                });
+            } else {
+                results.innerHTML += '<p>❌ EmployeeDataManager not loaded</p>';
+            }
+            
+            // Test 3: Check localStorage
+            results.innerHTML += '<h2>Test 3: LocalStorage</h2>';
+            const saved = localStorage.getItem('employeeDirectory');
+            if (saved) {
+                results.innerHTML += '<p>✅ Data found in localStorage</p>';
+                try {
+                    const parsed = JSON.parse(saved);
+                    results.innerHTML += `<p>✅ Parsed data: ${parsed.length} employees</p>`;
+                } catch (e) {
+                    results.innerHTML += '<p>❌ Error parsing localStorage data</p>';
+                }
+            } else {
+                results.innerHTML += '<p>ℹ️ No data in localStorage (using mock data)</p>';
+            }
+            
+            // Test 4: Test search functionality
+            results.innerHTML += '<h2>Test 4: Search Functionality</h2>';
+            if (typeof employeeDataManager !== 'undefined') {
+                const searchResults = employeeDataManager.searchEmployees('john');
+                results.innerHTML += `<p>✅ Search for 'john' found: ${searchResults.length} results</p>`;
+            }
+            
+            // Test 5: Test filter functionality
+            results.innerHTML += '<h2>Test 5: Filter Functionality</h2>';
+            if (typeof employeeDataManager !== 'undefined') {
+                const filterResults = employeeDataManager.filterEmployees({ department: 'IT' });
+                results.innerHTML += `<p>✅ Filter for IT department found: ${filterResults.length} results</p>`;
+            }
+        });
+    </script>
+</body>
+</html> 

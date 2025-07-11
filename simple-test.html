@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Employee Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .employee-card { border: 1px solid #ccc; padding: 10px; margin: 10px 0; }
+        .btn { padding: 5px 10px; margin: 2px; }
+    </style>
+</head>
+<body>
+    <h1>Simple Employee Test</h1>
+    <button onclick="loadEmployees()">Load Employees</button>
+    <button onclick="addEmployee()">Add Test Employee</button>
+    <div id="employee-list"></div>
+
+    <script src="src/main/resources/static/js/data.js"></script>
+    <script>
+        let employeeDataManager;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM loaded');
+            console.log('mockEmployees available:', typeof mockEmployees !== 'undefined');
+            console.log('employeeDataManager available:', typeof employeeDataManager !== 'undefined');
+            
+            if (typeof employeeDataManager !== 'undefined') {
+                loadEmployees();
+            } else {
+                document.getElementById('employee-list').innerHTML = '<p>EmployeeDataManager not loaded</p>';
+            }
+        });
+        
+        function loadEmployees() {
+            const list = document.getElementById('employee-list');
+            if (typeof employeeDataManager !== 'undefined') {
+                const employees = employeeDataManager.getAllEmployees();
+                list.innerHTML = '<h2>Employees (' + employees.length + ')</h2>';
+                employees.forEach(emp => {
+                    list.innerHTML += `
+                        <div class="employee-card">
+                            <strong>${emp.firstName} ${emp.lastName}</strong><br>
+                            Email: ${emp.email}<br>
+                            Department: ${emp.department}<br>
+                            Role: ${emp.role}
+                        </div>
+                    `;
+                });
+            } else {
+                list.innerHTML = '<p>EmployeeDataManager not available</p>';
+            }
+        }
+        
+        function addEmployee() {
+            if (typeof employeeDataManager !== 'undefined') {
+                const newEmp = employeeDataManager.addEmployee({
+                    firstName: 'Test',
+                    lastName: 'User',
+                    email: 'test@example.com',
+                    department: 'IT',
+                    role: 'Developer'
+                });
+                console.log('Added employee:', newEmp);
+                loadEmployees();
+            }
+        }
+    </script>
+</body>
+</html> 

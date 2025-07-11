@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Directory</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <#-- Freemarker data assignment as required by assignment -->
+    <#assign mockEmployeesJson = '[
+        {"id": 1, "firstName": "John", "lastName": "Doe", "email": "john.doe@company.com", "department": "HR", "role": "Manager"},
+        {"id": 2, "firstName": "Jane", "lastName": "Smith", "email": "jane.smith@company.com", "department": "IT", "role": "Developer"},
+        {"id": 3, "firstName": "Michael", "lastName": "Johnson", "email": "michael.johnson@company.com", "department": "Finance", "role": "Analyst"},
+        {"id": 4, "firstName": "Sarah", "lastName": "Williams", "email": "sarah.williams@company.com", "department": "Marketing", "role": "Manager"},
+        {"id": 5, "firstName": "David", "lastName": "Brown", "email": "david.brown@company.com", "department": "IT", "role": "Developer"},
+        {"id": 6, "firstName": "Emily", "lastName": "Davis", "email": "emily.davis@company.com", "department": "Sales", "role": "Coordinator"},
+        {"id": 7, "firstName": "Robert", "lastName": "Miller", "email": "robert.miller@company.com", "department": "HR", "role": "Coordinator"},
+        {"id": 8, "firstName": "Lisa", "lastName": "Wilson", "email": "lisa.wilson@company.com", "department": "IT", "role": "Manager"},
+        {"id": 9, "firstName": "James", "lastName": "Moore", "email": "james.moore@company.com", "department": "Finance", "role": "Analyst"},
+        {"id": 10, "firstName": "Jennifer", "lastName": "Taylor", "email": "jennifer.taylor@company.com", "department": "Marketing", "role": "Designer"}
+    ]'>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <h1 class="header__title">Employee Directory</h1>
+            <div class="header__actions">
+                <button class="btn btn--secondary" id="reset-data-btn">Reset Data</button>
+                <button class="btn btn--primary" id="add-employee-btn">Add Employee</button>
+            </div>
+        </header>
+
+        <!-- Search and Filter Bar -->
+        <div class="toolbar">
+            <div class="toolbar__search">
+                <input type="text" id="search-input" placeholder="Search by name or email..." class="search-input">
+            </div>
+            <div class="toolbar__actions">
+                <button class="btn btn--secondary" id="filter-btn">Filter</button>
+                <select id="sort-select" class="sort-select">
+                    <option value="">Sort by...</option>
+                    <option value="firstName">First Name</option>
+                    <option value="department">Department</option>
+                    <option value="role">Role</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Filter Sidebar -->
+        <div class="filter-sidebar" id="filter-sidebar">
+            <div class="filter-sidebar__header">
+                <h3>Filter Employees</h3>
+                <button class="btn btn--close" id="close-filter-btn">&times;</button>
+            </div>
+            <div class="filter-sidebar__content">
+                <div class="filter-group">
+                    <label for="filter-firstName">First Name:</label>
+                    <input type="text" id="filter-firstName" placeholder="Enter first name">
+                </div>
+                <div class="filter-group">
+                    <label for="filter-department">Department:</label>
+                    <select id="filter-department">
+                        <option value="">All Departments</option>
+                        <option value="HR">HR</option>
+                        <option value="IT">IT</option>
+                        <option value="Finance">Finance</option>
+                        <option value="Marketing">Marketing</option>
+                        <option value="Sales">Sales</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="filter-role">Role:</label>
+                    <select id="filter-role">
+                        <option value="">All Roles</option>
+                        <option value="Manager">Manager</option>
+                        <option value="Developer">Developer</option>
+                        <option value="Designer">Designer</option>
+                        <option value="Analyst">Analyst</option>
+                        <option value="Coordinator">Coordinator</option>
+                    </select>
+                </div>
+                <div class="filter-actions">
+                    <button class="btn btn--primary" id="apply-filter-btn">Apply Filter</button>
+                    <button class="btn btn--secondary" id="clear-filter-btn">Clear</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Employee List Container -->
+        <div class="main-content">
+            <div class="employee-list" id="employee-list">
+                <!-- Employee cards will be dynamically rendered by JavaScript -->
+            </div>
+
+            <!-- Pagination Controls -->
+            <div class="pagination" id="pagination">
+                <div class="pagination__info">
+                    <span id="pagination-info">Showing 1-10 of 0 employees</span>
+                </div>
+                <div class="pagination__controls">
+                    <button class="btn btn--pagination" id="prev-page-btn" disabled>Previous</button>
+                    <div class="pagination__pages" id="pagination-pages"></div>
+                    <button class="btn btn--pagination" id="next-page-btn">Next</button>
+                </div>
+                <div class="pagination__size">
+                    <label for="page-size-select">Items per page:</label>
+                    <select id="page-size-select">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add/Edit Form Modal -->
+        <div class="modal-overlay" id="modal-overlay">
+            <div class="modal">
+                <div class="modal__header">
+                    <h2 id="modal-title">Add Employee</h2>
+                    <button class="btn btn--close" id="close-modal-btn">&times;</button>
+                </div>
+                <form class="employee-form" id="employee-form">
+                    <div class="form-group">
+                        <label for="firstName">First Name *</label>
+                        <input type="text" id="firstName" name="firstName" required>
+                        <span class="error-message" id="firstName-error"></span>
+                    </div>
+                    <div class="form-group">
+                        <label for="lastName">Last Name *</label>
+                        <input type="text" id="lastName" name="lastName" required>
+                        <span class="error-message" id="lastName-error"></span>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email *</label>
+                        <input type="email" id="email" name="email" required>
+                        <span class="error-message" id="email-error"></span>
+                    </div>
+                    <div class="form-group">
+                        <label for="department">Department *</label>
+                        <select id="department" name="department" required>
+                            <option value="">Select Department</option>
+                            <option value="HR">HR</option>
+                            <option value="IT">IT</option>
+                            <option value="Finance">Finance</option>
+                            <option value="Marketing">Marketing</option>
+                            <option value="Sales">Sales</option>
+                        </select>
+                        <span class="error-message" id="department-error"></span>
+                    </div>
+                    <div class="form-group">
+                        <label for="role">Role *</label>
+                        <select id="role" name="role" required>
+                            <option value="">Select Role</option>
+                            <option value="Manager">Manager</option>
+                            <option value="Developer">Developer</option>
+                            <option value="Designer">Designer</option>
+                            <option value="Analyst">Analyst</option>
+                            <option value="Coordinator">Coordinator</option>
+                        </select>
+                        <span class="error-message" id="role-error"></span>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn--primary">Save Employee</button>
+                        <button type="button" class="btn btn--secondary" id="cancel-form-btn">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div class="loading-indicator" id="loading-indicator">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Load mock data from Freemarker template
+        const freemarkerMockEmployees = ${mockEmployeesJson};
+        console.log('Freemarker mock data loaded:', freemarkerMockEmployees.length, 'employees');
+    </script>
+    <script src="/static/js/data.js"></script>
+    <script src="/static/js/validation.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
